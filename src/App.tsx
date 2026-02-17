@@ -1,18 +1,4 @@
-import {
-  Stepper,
-  Button,
-  Group,
-  TextInput,
-  Select,
-  Container,
-  Paper,
-  Title,
-  Modal,
-  Radio,
-  Stack,
-  Text,
-  Card,
-} from "@mantine/core";
+import { Stepper, Button, Group, TextInput, Select, Container, Paper, Title, Modal, Radio, Stack, Text, Card } from "@mantine/core";
 import { useState } from "react";
 
 interface OrderData {
@@ -61,7 +47,6 @@ export default function App() {
         </Title>
 
         <Stepper active={active}>
-          {/* 1. Lépés */}
           <Stepper.Step label="Számlázás">
             <Stack>
               <TextInput
@@ -93,8 +78,6 @@ export default function App() {
               />
             </Stack>
           </Stepper.Step>
-
-          {/* 2. Lépés */}
           <Stepper.Step label="Szállítás">
             <Stack>
               <Select
@@ -118,14 +101,14 @@ export default function App() {
 
                   <Text>
                     Kiválasztott pont:{" "}
-                    <strong>{orderData.pickupPoint || "Nincs kiválasztva"}</strong>
+                    <strong>
+                      {orderData.pickupPoint || "Nincs kiválasztva"}
+                    </strong>
                   </Text>
                 </>
               )}
             </Stack>
           </Stepper.Step>
-
-          {/* 3. Lépés */}
           <Stepper.Step label="Fizetés">
             <Radio.Group
               label="Fizetési mód"
@@ -140,23 +123,31 @@ export default function App() {
               </Stack>
             </Radio.Group>
           </Stepper.Step>
-
-          {/* 4. Lépés */}
           <Stepper.Completed>
             <Card shadow="sm" padding="lg" radius="md" withBorder>
               <Title order={4} mb="md">
                 📋 Összegzés
               </Title>
-              <Text><strong>Név:</strong> {orderData.name}</Text>
-              <Text><strong>Email:</strong> {orderData.email}</Text>
-              <Text><strong>Cím:</strong> {orderData.address}</Text>
-              <Text><strong>Szállítás:</strong> {orderData.shippingMethod}</Text>
+              <Text>
+                <strong>Név:</strong> {orderData.name}
+              </Text>
+              <Text>
+                <strong>Email:</strong> {orderData.email}
+              </Text>
+              <Text>
+                <strong>Cím:</strong> {orderData.address}
+              </Text>
+              <Text>
+                <strong>Szállítás:</strong> {orderData.shippingMethod}
+              </Text>
               {orderData.shippingMethod === "pickup" && (
                 <Text>
                   <strong>Átvételi pont:</strong> {orderData.pickupPoint}
                 </Text>
               )}
-              <Text><strong>Fizetés:</strong> {orderData.paymentMethod}</Text>
+              <Text>
+                <strong>Fizetés:</strong> {orderData.paymentMethod}
+              </Text>
 
               <Button mt="lg" fullWidth onClick={handleFinalize}>
                 ✅ Rendelés véglegesítése
@@ -165,22 +156,16 @@ export default function App() {
           </Stepper.Completed>
         </Stepper>
 
-        {/* Navigáció */}
         <Group justify="space-between" mt="xl">
           {active > 0 && active < 4 && (
             <Button variant="default" onClick={prevStep}>
               Vissza
             </Button>
           )}
-          {active < 3 && (
-            <Button onClick={nextStep}>
-              Tovább
-            </Button>
-          )}
+          {active < 3 && <Button onClick={nextStep}>Tovább</Button>}
         </Group>
       </Paper>
 
-      {/* Popup modal */}
       <Modal
         opened={opened}
         onClose={() => setOpened(false)}
