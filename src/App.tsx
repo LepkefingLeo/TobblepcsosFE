@@ -93,8 +93,11 @@ export default function App() {
                   setOrderData({ ...orderData, name: e.target.value })
                 }
                 required
-                error={errors.name}
               />
+              {errors.name && (
+                <Text c="red" size="sm">{errors.name}</Text>
+              )}
+
               <TextInput
                 label="Email"
                 placeholder="email@example.com"
@@ -103,8 +106,11 @@ export default function App() {
                   setOrderData({ ...orderData, email: e.target.value })
                 }
                 required
-                error={errors.email}
               />
+              {errors.email && (
+                <Text c="red" size="sm">{errors.email}</Text>
+              )}
+
               <TextInput
                 label="Cím"
                 placeholder="Számlázási cím"
@@ -113,8 +119,10 @@ export default function App() {
                   setOrderData({ ...orderData, address: e.target.value })
                 }
                 required
-                error={errors.address}
               />
+              {errors.address && (
+                <Text c="red" size="sm">{errors.address}</Text>
+              )}
             </Stack>
           </Stepper.Step>
           <Stepper.Step label="Szállítás">
@@ -138,7 +146,7 @@ export default function App() {
                   <Button variant="outline" onClick={() => setOpened(true)}>
                     Átvételi pont kiválasztása
                   </Button>
-                  <Text c={errors.pickupPoint ? "red" : undefined}>
+                  <Text>
                     Kiválasztott pont:{" "}
                     <strong>
                       {orderData.pickupPoint || "Nincs kiválasztva"}
@@ -212,7 +220,7 @@ export default function App() {
       <Modal
         opened={opened}
         onClose={() => setOpened(false)}
-        title="Válasszon átvételi pontot"
+        title="Válasszon átvételi pontot:"
         centered
         overlayProps={{
           blur: 2,
