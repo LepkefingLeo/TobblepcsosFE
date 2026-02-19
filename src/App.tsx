@@ -10,10 +10,38 @@ interface OrderData {
   paymentMethod: string;
 }
 
+interface Errors {
+  name?: string;
+  email?: string;
+  address?: string;
+  shippingMethod?: string;
+  pickupPoint?: string;
+  paymentMethod?: string;
+}
+
+function validate(orderData: OrderData, step: number): Errors {
+  const errors: Errors = {};
+  if (step === 0) {
+    if (!orderData.name.trim()) errors.name = "Név megadása kötelező!";
+    if (!orderData.email.trim()) errors.email = "Email megadása kötelező!";
+    else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(orderData.email))
+      errors.email = "Érvénytelen email cím!";
+    if (!orderData.address.trim()) errors.address = "Cím megadása kötelező!";
+  }
+  if (step === 1) {
+    if (!orderData.shippingMethod) errors.shippingMethod = "Válasszon szállítási módot!";
+    if (orderData.shippingMethod === "Személyes átvétel" && !orderData.pickupPoint)
+      errors.pickupPoint = "Válasszon átvételi pontot!";
+  }
+  if (step === 2) {
+    if (!orderData.paymentMethod) errors.paymentMethod = "Válasszon fizetési módot!";
+  }
+  return errors;
+}
+
 export default function App() {
   const [active, setActive] = useState(0);
   const [opened, setOpened] = useState(false);
-
   const [orderData, setOrderData] = useState<OrderData>({
     name: "",
     email: "",
@@ -22,28 +50,36 @@ export default function App() {
     pickupPoint: "",
     paymentMethod: "",
   });
+  const [errors, setErrors] = useState<Errors>({});
 
-  const nextStep = () =>
-    setActive((current) => (current < 3 ? current + 1 : current));
-  const prevStep = () =>
-    setActive((current) => (current > 0 ? current - 1 : current));
+  const nextStep = () => {
+    const stepErrors = validate(orderData, active);
+    setErrors(stepErrors);
+    if (Object.keys(stepErrors).length === 0) setActive((current) => (current < 3 ? current + 1 : current));
+  };
+  const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current));
 
   const handleFinalize = () => {
-    console.log("Rendelés véglegesítve:", orderData);
-    alert("Rendelés elküldve! Nézd meg a konzolt.");
+    const stepErrors = validate(orderData, 2);
+    setErrors(stepErrors);
+    if (Object.keys(stepErrors).length === 0) {
+      console.log("Rendelése véglegesítve:", orderData);
+      alert("Rendelése elküldve!");
+    }
   };
 
-  const pickupPoints = [
-    "Budapest - Westend",
-    "Debrecen - Fórum",
-    "Szeged - Árkád",
+  const popupForPickupPoints = [
+    "Budapest, Örs vezér tere 25/A, 1106 - ÁRKÁD",
+    "Budapest, Váci út 1-3, 1062 - WESTEND",
+    "Budapest, Kerepesi út 9, 1087 - ARÉNA PLÁZA",
+    "Budapest, Vak Bottyán u. 75/A-C, 1191 - KÖKI"
   ];
 
   return (
-    <Container size="sm" py="xl">
-      <Paper shadow="md" p="xl" radius="md" withBorder>
+    <Container size="sm" py="xl" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Paper shadow="md" p="xl" radius="md" withBorder style={{ width: "100%", maxWidth: 500, margin: "0 auto" }}>
         <Title order={2} mb="lg" ta="center">
-          🛒 Online rendelés
+          <picture className="Logo"><img src="/src/assets/logo.png" alt="Logo" width="30" height="30" ></img></picture> Online rendelés
         </Title>
 
         <Stepper active={active}>
@@ -57,6 +93,7 @@ export default function App() {
                   setOrderData({ ...orderData, name: e.target.value })
                 }
                 required
+                error={errors.name}
               />
               <TextInput
                 label="Email"
@@ -66,6 +103,7 @@ export default function App() {
                   setOrderData({ ...orderData, email: e.target.value })
                 }
                 required
+                error={errors.email}
               />
               <TextInput
                 label="Cím"
@@ -75,6 +113,7 @@ export default function App() {
                   setOrderData({ ...orderData, address: e.target.value })
                 }
                 required
+                error={errors.address}
               />
             </Stack>
           </Stepper.Step>
@@ -82,29 +121,32 @@ export default function App() {
             <Stack>
               <Select
                 label="Szállítási mód"
-                placeholder="Válassz..."
+                placeholder="Válasszon..."
                 data={[
-                  { value: "home", label: "Házhozszállítás" },
-                  { value: "pickup", label: "Személyes átvétel" },
+                  { value: "Házhozszállítás", label: "Házhozszállítás" },
+                  { value: "Személyes átvétel", label: "Személyes átvétel" },
                 ]}
                 value={orderData.shippingMethod}
                 onChange={(value) =>
                   setOrderData({ ...orderData, shippingMethod: value || "" })
                 }
+                error={errors.shippingMethod}
               />
 
-              {orderData.shippingMethod === "pickup" && (
+              {orderData.shippingMethod === "Személyes átvétel" && (
                 <>
                   <Button variant="outline" onClick={() => setOpened(true)}>
                     Átvételi pont kiválasztása
                   </Button>
-
-                  <Text>
+                  <Text c={errors.pickupPoint ? "red" : undefined}>
                     Kiválasztott pont:{" "}
                     <strong>
                       {orderData.pickupPoint || "Nincs kiválasztva"}
                     </strong>
                   </Text>
+                  {errors.pickupPoint && (
+                    <Text c="red" size="sm">{errors.pickupPoint}</Text>
+                  )}
                 </>
               )}
             </Stack>
@@ -116,17 +158,18 @@ export default function App() {
               onChange={(value) =>
                 setOrderData({ ...orderData, paymentMethod: value })
               }
+              error={errors.paymentMethod}
             >
               <Stack mt="sm">
-                <Radio value="card" label="Bankkártya" />
-                <Radio value="cash" label="Utánvét" />
+                <Radio value="Bankkártya" label="Bankkártya" />
+                <Radio value="Utánvét" label="Utánvét" />
               </Stack>
             </Radio.Group>
           </Stepper.Step>
           <Stepper.Completed>
             <Card shadow="sm" padding="lg" radius="md" withBorder>
               <Title order={4} mb="md">
-                📋 Összegzés
+                Összegzés
               </Title>
               <Text>
                 <strong>Név:</strong> {orderData.name}
@@ -138,7 +181,7 @@ export default function App() {
                 <strong>Cím:</strong> {orderData.address}
               </Text>
               <Text>
-                <strong>Szállítás:</strong> {orderData.shippingMethod}
+                <strong>Szállítás módja:</strong> {orderData.shippingMethod}
               </Text>
               {orderData.shippingMethod === "pickup" && (
                 <Text>
@@ -149,8 +192,8 @@ export default function App() {
                 <strong>Fizetés:</strong> {orderData.paymentMethod}
               </Text>
 
-              <Button mt="lg" fullWidth onClick={handleFinalize}>
-                ✅ Rendelés véglegesítése
+              <Button mt="lg" color="green" fullWidth onClick={handleFinalize}>
+                Rendelés véglegesítése
               </Button>
             </Card>
           </Stepper.Completed>
@@ -169,10 +212,15 @@ export default function App() {
       <Modal
         opened={opened}
         onClose={() => setOpened(false)}
-        title="Válassz átvételi pontot"
+        title="Válasszon átvételi pontot"
+        centered
+        overlayProps={{
+          blur: 2,
+          backgroundOpacity: 0.55,
+        }}
       >
         <Stack>
-          {pickupPoints.map((point) => (
+          {popupForPickupPoints.map((point) => (
             <Button
               key={point}
               variant="light"
@@ -180,6 +228,7 @@ export default function App() {
                 setOrderData({ ...orderData, pickupPoint: point });
                 setOpened(false);
               }}
+              style={{ width: "100%" }}
             >
               {point}
             </Button>
