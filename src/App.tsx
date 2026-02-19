@@ -138,8 +138,11 @@ export default function App() {
                 onChange={(value) =>
                   setOrderData({ ...orderData, shippingMethod: value || "" })
                 }
-                error={errors.shippingMethod}
+                required
               />
+              {errors.shippingMethod && (
+                <Text c="red" size="sm">{errors.shippingMethod}</Text>
+              )}
 
               {orderData.shippingMethod === "Személyes átvétel" && (
                 <>
@@ -166,6 +169,7 @@ export default function App() {
               onChange={(value) =>
                 setOrderData({ ...orderData, paymentMethod: value })
               }
+              required
               error={errors.paymentMethod}
             >
               <Stack mt="sm">
